@@ -4,7 +4,7 @@ from typing import Dict, Tuple, Optional, Any
 
 import kaggle
 import torch
-from pytorch_lightning import LightningDataModule
+from lightning import LightningDataModule
 from torch.utils.data import Dataset, DataLoader, random_split
 from torchvision.datasets import ImageFolder
 from torchvision.transforms import transforms
@@ -15,7 +15,7 @@ from .components.animal_dataset import AnimalUnlabeledDataset
 class AnimalLabeledDataModule(LightningDataModule):
     def __init__(
         self,
-        data_dir: str = "data/lsdl_hw2/data",
+        data_dir: str = "data",
         train_val_test_split: Tuple[int, int, int] = (0.8, 0.2),
         batch_size: int = 64,
         num_workers: int = 0,
@@ -23,6 +23,8 @@ class AnimalLabeledDataModule(LightningDataModule):
     ) -> None:
         super().__init__()
         self.save_hyperparameters(logger=False)
+
+        self.data_dir = os.path.join(data_dir, 'lsdl_hw2/data')
 
         self.transforms = transforms.Compose([
             transforms.ToTensor(),
@@ -44,10 +46,10 @@ class AnimalLabeledDataModule(LightningDataModule):
         return 10
 
     def prepare_data(self) -> None:
-        if not os.path.isdir(self.hparams.data_dir):
+        if not os.path.isdir(self.data_dir):
             print('Downloading data')
             kaggle.api.authenticate()
-            path, name = os.path.split(os.path.split(self.hparams.data_dir)[0])
+            path, name = os.path.split(os.path.split(self.data_dir)[0])
             print(path)
             kaggle.api.competition_download_files('lsdl-hw-2', path=path)
             with zipfile.ZipFile(os.path.join(path, 'lsdl-hw-2.zip'), 'r') as zip_ref:
@@ -62,8 +64,8 @@ class AnimalLabeledDataModule(LightningDataModule):
             self.batch_size_per_device = self.hparams.batch_size // self.trainer.world_size
 
         if not self.data_train and not self.data_val and not self.data_test:
-            trainset = ImageFolder(os.path.join(self.hparams.data_dir, 'train/labeled'), transform=self.transforms)
-            self.data_test = AnimalUnlabeledDataset(os.path.join(self.hparams.data_dir, 'test'), transform=self.transforms)
+            trainset = ImageFolder(os.path.join(self.data_dir, 'train/labeled'), transform=self.transforms)
+            self.data_test = AnimalUnlabeledDataset(os.path.join(self.data_dir, 'test'), transform=self.transforms)
             self.data_train, self.data_val = random_split(
                 dataset=trainset,
                 lengths=self.hparams.train_val_test_split,

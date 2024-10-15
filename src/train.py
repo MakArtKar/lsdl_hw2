@@ -1,7 +1,10 @@
+import itertools
+import os
 from typing import Any, Dict, List, Optional, Tuple
 
 import hydra
 import lightning as L
+import pandas as pd
 import rootutils
 import torch
 from lightning import Callback, LightningDataModule, LightningModule, Trainer
@@ -98,6 +101,28 @@ def train(cfg: DictConfig) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         log.info(f"Best ckpt path: {ckpt_path}")
 
     test_metrics = trainer.callback_metrics
+
+    if cfg.get("predict"):
+        log.info("Starting predicting!")
+        ckpt_path = trainer.checkpoint_callback.best_model_path
+        if ckpt_path == "":
+            log.warning("Best ckpt not found! Using current weights for predicting...")
+            ckpt_path = None
+        result = trainer.predict(model=model, datamodule=datamodule, ckpt_path=ckpt_path)
+        predictions = list(itertools.chain(*(batch[0] for batch in result)))
+        image_paths = list(itertools.chain(*(batch[1] for batch in result)))
+        image_paths = [os.path.basename(path) for path in image_paths]
+        df = pd.DataFrame([image_paths, predictions]).T.rename(columns={0: 'id', 1: 'class'})[['id', 'class']]
+        predictions_path = os.path.join(cfg.paths.output_dir, 'predictions.csv')
+        df.to_csv(predictions_path, index=False)
+        if cfg.get("logger") and cfg.logger.get('wandb'):
+            import wandb
+
+            artifact = wandb.Artifact('predictions', type='dataset')
+            artifact.add_file(predictions_path)
+            trainer.logger.experiment.log_artifact(artifact)
+        log.info(f"Best ckpt path: {ckpt_path}")
+
 
     # merge train and test metrics
     metric_dict = {**train_metrics, **test_metrics}

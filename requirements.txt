@@ -25,3 +25,4 @@ pytest          # tests
 
 pandas
 kaggle
+segmentation_models_pytorch

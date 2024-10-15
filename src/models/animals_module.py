@@ -9,6 +9,7 @@ class AnimalsModule(LightningModule):
     def __init__(
         self,
         net: torch.nn.Module,
+        loss: torch.nn.Module,
         optimizer: torch.optim.Optimizer,
         scheduler: torch.optim.lr_scheduler,
         compile: bool,
@@ -19,7 +20,7 @@ class AnimalsModule(LightningModule):
 
         self.net = net
 
-        self.criterion = torch.nn.CrossEntropyLoss()
+        self.criterion = loss
         self.train_acc = Accuracy(task="multiclass", num_classes=10)
         self.val_acc = Accuracy(task="multiclass", num_classes=10)
         self.test_acc = Accuracy(task="multiclass", num_classes=10)

@@ -1,4 +1,4 @@
-_target_: src.models.animals.AnimalsModule
+_target_: src.models.animals_module.AnimalsModule
 
 optimizer:
   _target_: torch.optim.Adam
@@ -15,7 +15,6 @@ scheduler:
 
 net:
   _target_: torchvision.models.resnet18
-  _partial_: true
   num_classes: 10
 
 # compile model for faster training with pytorch 2.0

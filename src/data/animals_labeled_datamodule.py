@@ -90,7 +90,7 @@ class AnimalLabeledDataModule(LightningDataModule):
             shuffle=False,
         )
 
-    def test_dataloader(self) -> DataLoader[Any]:
+    def predict_dataloader(self) -> DataLoader[Any]:
         return DataLoader(
             dataset=self.data_test,
             batch_size=self.batch_size_per_device,

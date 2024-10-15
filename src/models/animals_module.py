@@ -39,7 +39,7 @@ class AnimalsModule(LightningModule):
         self.val_acc_best.reset()
 
     def model_step(
-        self, batch: Tuple[torch.Tensor, torch.Tensor]
+        self, batch: Tuple[torch.Tensor, torch.Tensor], train=True
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         x, y = batch
         logits = self.forward(x)
@@ -72,13 +72,13 @@ class AnimalsModule(LightningModule):
         self.val_acc_best(acc)  # update best so far val acc
         self.log("val/acc_best", self.val_acc_best.compute(), sync_dist=True, prog_bar=True)
 
-    def test_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> None:
-        loss, preds, targets = self.model_step(batch)
-
-        self.test_loss(loss)
-        self.test_acc(preds, targets)
-        self.log("test/loss", self.test_loss, on_step=False, on_epoch=True, prog_bar=True)
-        self.log("test/acc", self.test_acc, on_step=False, on_epoch=True, prog_bar=True)
+    def predict_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> None:
+        x, img_paths = batch['image'], batch['image_path']
+        logits = self.forward(x)
+        preds = torch.argmax(logits, dim=1)
+        class_names_mapper = self.trainer.datamodule.data_test.class_names
+        class_names = [class_names_mapper[idx] for idx in preds]
+        return class_names, img_paths
 
     def configure_optimizers(self) -> Dict[str, Any]:
         optimizer = self.hparams.optimizer(params=self.trainer.model.parameters())

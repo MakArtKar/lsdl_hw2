@@ -1,0 +1,23 @@
+# @package _global_
+
+tags: ["baseline", "losses"]
+
+seed: 12345
+
+model:
+  loss:
+    _target_: src.loss.mixed_losses.MixedLosses
+    losses:
+      - _target_: segmentation_models_pytorch.losses.FocalLoss
+        mode: multiclass
+        alpha: 0.5
+        gamma: 1
+      - _target_: segmentation_models_pytorch.losses.DiceLoss
+        mode: multiclass
+    coefs:
+      - 0.5
+      - 0.5
+
+logger:
+  wandb:
+    tags: ${tags}

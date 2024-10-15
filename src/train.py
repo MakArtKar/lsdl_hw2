@@ -115,7 +115,7 @@ def train(cfg: DictConfig) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         df = pd.DataFrame([image_paths, predictions]).T.rename(columns={0: 'id', 1: 'class'})[['id', 'class']]
         predictions_path = os.path.join(cfg.paths.output_dir, 'predictions.csv')
         df.to_csv(predictions_path, index=False)
-        if cfg.get("logger") and cfg.logger.get('wandb'):
+        if cfg.get("logger") and cfg.logger.get('wandb') and trainer.logger is not None:
             import wandb
 
             artifact = wandb.Artifact('predictions', type='dataset')

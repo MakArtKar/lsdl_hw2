@@ -18,6 +18,9 @@ transforms:
     max_width: 16
     fill_value: 0
     p: 0.5
+  - _target_: albumentations.ToGray
+    num_output_channels: 3
+    always_apply: True
   - _target_: src.transforms.AlbumentationWrapper
     transform:
       _target_: src.transforms.PuzzleExtract

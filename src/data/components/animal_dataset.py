@@ -2,6 +2,7 @@ import glob
 
 import numpy as np
 import torch
+import torchvision
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision.datasets import ImageFolder
@@ -17,7 +18,7 @@ class AnimalDataset(ImageFolder):
         image, label = super().__getitem__(idx)
         if self.alb_transform is not None:
             image = self.alb_transform(image=np.array(image))['image']
-        return image, label
+        return {'image': image, 'label': label}
 
 
 class AnimalUnlabeledDataset(Dataset):
@@ -50,3 +51,17 @@ class AnimalUnlabeledDataset(Dataset):
         if self.transform is not None:
             img = self.transform(image=img)['image']
         return {'image': img, 'image_path': self.data[idx]}
+
+
+class AnimalUnlabeledRotationDataset(AnimalUnlabeledDataset):
+    def __init__(self, *args, num_angles: int = 4, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.angles = np.linspace(0, 360, num_angles, endpoint=False)
+
+    def __getitem__(self, idx):
+        angle = int(np.random.choice(range(len(self.angles))))
+        img = np.array(Image.open(self.data[idx]))
+        if self.transform is not None:
+            img = self.transform(image=img)['image']
+        img = torchvision.transforms.functional.rotate(img, self.angles[angle])
+        return {'image': img, 'label': angle}

@@ -16,7 +16,7 @@ class AnimalsModule(LightningModule):
     ) -> None:
         super().__init__()
 
-        self.save_hyperparameters(logger=False)
+        self.save_hyperparameters(logger=False, ignore=['net'])
 
         self.net = net
 
@@ -42,7 +42,7 @@ class AnimalsModule(LightningModule):
     def model_step(
         self, batch: Tuple[torch.Tensor, torch.Tensor], train=True
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        x, y = batch
+        x, y = batch['image'], batch['label']
         logits = self.forward(x)
         loss = self.criterion(logits, y)
         preds = torch.argmax(logits, dim=1)

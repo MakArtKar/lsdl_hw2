@@ -1,5 +1,6 @@
 import itertools
 import os
+from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple
 
 import hydra
@@ -85,9 +86,29 @@ def train(cfg: DictConfig) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         log.info("Logging hyperparameters!")
         log_hyperparameters(object_dict)
 
+    if cfg.get("ckpt_path"):
+        log.info(f"Copying weights from pretrained: {cfg.get('ckpt_path')}")
+        dct = torch.load(cfg.get("ckpt_path"), weights_only=False)['state_dict']
+
+        ignored_param_names = []
+        for name, param in model.named_parameters():
+            if name not in dct:
+                ignored_param_names.append(name)
+                continue
+            banned = False
+            for item in cfg.get("ignored_children", []):
+                if name.startswith(f'net.{item}'):
+                    banned = True
+                    break
+            if not banned:
+                param.data = dct[name].cpu()
+            else:
+                ignored_param_names.append(name)
+        log.info(f"Ignored weights: {ignored_param_names}")
+
     if cfg.get("train"):
         log.info("Starting training!")
-        trainer.fit(model=model, datamodule=datamodule, ckpt_path=cfg.get("ckpt_path"))
+        trainer.fit(model=model, datamodule=datamodule)
 
     train_metrics = trainer.callback_metrics
 

@@ -1,0 +1,29 @@
+# @package _global_
+
+defaults:
+  - _self_
+  - baseline_augs
+
+tags: ["baseline", "rotation_pretrain"]
+
+seed: 12345
+
+num_angles: 9
+
+data:
+  train_dataset:
+    _target_: src.data.components.animal_dataset.AnimalUnlabeledRotationDataset
+    _partial_: True
+    root: train/unlabeled
+    num_angles: ${num_angles}
+  test_dataset:
+
+model:
+  net:
+    num_classes: ${num_angles}
+
+predict: False
+
+logger:
+  wandb:
+    tags: ${tags}

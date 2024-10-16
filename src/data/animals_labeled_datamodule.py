@@ -16,6 +16,9 @@ class AnimalLabeledDataModule(LightningDataModule):
     def __init__(
         self,
         data_dir: str = "data",
+        train_dataset = None,
+        val_dataset = None,
+        test_dataset = None,
         train_transforms: Optional[A.BasicTransform] = None,
         val_transforms: Optional[A.BasicTransform] = None,
         train_val_test_split: Tuple[int, int, int] = (0.8, 0.2),
@@ -28,9 +31,6 @@ class AnimalLabeledDataModule(LightningDataModule):
 
         self.data_dir = os.path.join(data_dir, 'lsdl_hw2/data')
 
-        self.train_transforms = train_transforms
-        self.val_transforms = val_transforms
-        
         self.data_train: Optional[Dataset] = None
         self.data_val: Optional[Dataset] = None
         self.data_test: Optional[Dataset] = None
@@ -64,16 +64,32 @@ class AnimalLabeledDataModule(LightningDataModule):
             self.batch_size_per_device = self.hparams.batch_size // self.trainer.world_size
 
         if not self.data_train and not self.data_val and not self.data_test:
-            self.data_train = AnimalDataset(os.path.join(self.data_dir, 'train/labeled'), transform=self.train_transforms)
-            self.data_val = AnimalDataset(os.path.join(self.data_dir, 'train/labeled'), transform=self.val_transforms)
-            self.data_test = AnimalUnlabeledDataset(os.path.join(self.data_dir, 'test'), transform=self.val_transforms)
-            indices = list(range(len(self.data_train)))
-            np.random.shuffle(indices)
-            train_num = int(self.hparams.train_val_test_split[0] * len(indices))
-            self.data_train = Subset(self.data_train, indices=indices[:train_num])
-            self.data_val = Subset(self.data_val, indices=indices[train_num:])
+            if self.hparams.train_dataset is not None:
+                self.data_train = self.hparams.train_dataset(
+                    root=os.path.join(self.data_dir, self.hparams.train_dataset.keywords['root']),
+                    transform=self.hparams.train_transforms
+                )
+                if self.hparams.val_dataset:
+                    self.data_val = self.hparams.val_dataset(
+                        root=os.path.join(self.data_dir, self.hparams.val_dataset.keywords['root']),
+                        transform=self.hparams.val_transforms
+                    )
+                else:
+                    self.data_val = self.hparams.train_dataset(
+                        root=os.path.join(self.data_dir, self.hparams.train_dataset.keywords['root']),
+                        transform=self.hparams.val_transforms
+                    )
+                    indices = list(range(len(self.data_train)))
+                    np.random.shuffle(indices)
+                    train_num = int(self.hparams.train_val_test_split[0] * len(indices))
+                    self.data_train = Subset(self.data_train, indices=indices[:train_num])
+                    self.data_val = Subset(self.data_val, indices=indices[train_num:])
 
-            self.data_train.alb_transform = self.train_transforms
+            if self.hparams.test_dataset is not None:
+                self.data_test = self.hparams.test_dataset(
+                    root=os.path.join(self.data_dir, self.hparams.test_dataset.keywords['root']),
+                    transform=self.hparams.val_transforms
+                )
 
     def train_dataloader(self) -> DataLoader[Any]:
         return DataLoader(

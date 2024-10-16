@@ -46,6 +46,9 @@ predict: True
 
 # simply provide checkpoint path to resume training
 ckpt_path: null
+ignored_children: []
 
 # seed for random number generators in pytorch, numpy and python.random
 seed: null
+
+run_name: ${now:%Y-%m-%d}_${now:%H-%M-%S}

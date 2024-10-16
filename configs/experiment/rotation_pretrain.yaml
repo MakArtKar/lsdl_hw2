@@ -1,0 +1,26 @@
+# @package _global_
+
+defaults:
+  - _self_
+  - baseline_augs
+
+tags: ["baseline", "rotation pretrain"]
+
+seed: 12345
+
+data:
+  train_dataset:
+    _target_: src.data.components.animal_dataset.AnimalUnlabeledRotationDataset
+    _partial_: True
+    root: train/unlabeled
+  test_dataset:
+
+model:
+  net:
+    num_classes: 4
+
+predict: False
+
+logger:
+  wandb:
+    tags: ${tags}

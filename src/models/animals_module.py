@@ -46,7 +46,7 @@ class AnimalsModule(LightningModule):
         loss = self.criterion(logits, batch['label'])
         preds = torch.argmax(logits, dim=1)
         return loss, preds, batch['label']
-    
+
     def training_step(
         self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int
     ) -> torch.Tensor:

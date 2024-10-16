@@ -86,9 +86,8 @@ class AnimalUnlabeledContextPredictionDataset(AnimalUnlabeledDataset):
     def __getitem__(self, idx):
         data = super().__getitem__(idx)
         label = idx % 8
-        label += label >= 4
         center_img = data['image'][4]
-        target_img = data['image'][label]
+        target_img = data['image'][label + int(label >= 4)]
         data["image"] = (center_img, target_img)
         data["label"] = label
         return data

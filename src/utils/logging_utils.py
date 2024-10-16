@@ -8,6 +8,13 @@ from src.utils import pylogger
 log = pylogger.RankedLogger(__name__, rank_zero_only=True)
 
 
+def p_numel(p):
+    try:
+        return p.numel()
+    except:
+        return 0
+
+
 @rank_zero_only
 def log_hyperparameters(object_dict: Dict[str, Any]) -> None:
     """Controls which config parts are saved by Lightning loggers.
@@ -33,12 +40,12 @@ def log_hyperparameters(object_dict: Dict[str, Any]) -> None:
     hparams["model"] = cfg["model"]
 
     # save number of model parameters
-    hparams["model/params/total"] = sum(p.numel() for p in model.parameters())
+    hparams["model/params/total"] = sum(p_numel(p) for p in model.parameters())
     hparams["model/params/trainable"] = sum(
-        p.numel() for p in model.parameters() if p.requires_grad
+        p_numel(p) for p in model.parameters() if p.requires_grad
     )
     hparams["model/params/non_trainable"] = sum(
-        p.numel() for p in model.parameters() if not p.requires_grad
+        p_numel(p) for p in model.parameters() if not p.requires_grad
     )
 
     hparams["data"] = cfg["data"]

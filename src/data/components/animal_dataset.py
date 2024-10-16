@@ -54,7 +54,10 @@ class AnimalUnlabeledDataset(Dataset):
 
 
 class AnimalUnlabeledRotationDataset(AnimalUnlabeledDataset):
-    angles = [0, 90, 270, 360]
+    def __init__(self, *args, num_angles: int = 4, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.angles = np.linspace(0, 360, num_angles, endpoint=False)
+
     def __getitem__(self, idx):
         angle = int(np.random.choice(range(len(self.angles))))
         img = np.array(Image.open(self.data[idx]))

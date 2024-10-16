@@ -89,15 +89,25 @@ def train(cfg: DictConfig) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     if cfg.get("ckpt_path"):
         log.info(f"Copying weights from pretrained: {cfg.get('ckpt_path')}")
         dct = torch.load(cfg.get("ckpt_path"), weights_only=False)['state_dict']
+        new_dct = {}
+        for key, value in dct.items():
+            for prefix in cfg.get('names_to_strip_pretrained', []):
+                if key.startswith(prefix):
+                    key = key[len(prefix):]
+            new_dct.update({key: value})
+        dct = new_dct
 
         ignored_param_names = []
         for name, param in model.named_parameters():
+            for prefix in cfg.get('names_to_strip', []):
+                if name.startswith(prefix):
+                    name = name[len(prefix):]
             if name not in dct:
                 ignored_param_names.append(name)
                 continue
             banned = False
             for item in cfg.get("ignored_children", []):
-                if name.startswith(f'net.{item}'):
+                if name.startswith(item):
                     banned = True
                     break
             if not banned:

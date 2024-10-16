@@ -47,6 +47,8 @@ predict: True
 # simply provide checkpoint path to resume training
 ckpt_path: null
 ignored_children: []
+names_to_strip: []
+names_to_strip_pretrained: []
 
 # seed for random number generators in pytorch, numpy and python.random
 seed: null

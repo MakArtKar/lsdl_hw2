@@ -2,20 +2,22 @@ import os
 import zipfile
 from typing import Dict, Tuple, Optional, Any
 
+import albumentations as A
 import kaggle
+import numpy as np
 import torch
 from lightning import LightningDataModule
-from torch.utils.data import Dataset, DataLoader, random_split
-from torchvision.datasets import ImageFolder
-from torchvision.transforms import transforms
+from torch.utils.data import Dataset, DataLoader, Subset
 
-from .components.animal_dataset import AnimalUnlabeledDataset
+from .components.animal_dataset import AnimalDataset, AnimalUnlabeledDataset
 
 
 class AnimalLabeledDataModule(LightningDataModule):
     def __init__(
         self,
         data_dir: str = "data",
+        train_transforms: Optional[A.BasicTransform] = None,
+        val_transforms: Optional[A.BasicTransform] = None,
         train_val_test_split: Tuple[int, int, int] = (0.8, 0.2),
         batch_size: int = 64,
         num_workers: int = 0,
@@ -26,10 +28,8 @@ class AnimalLabeledDataModule(LightningDataModule):
 
         self.data_dir = os.path.join(data_dir, 'lsdl_hw2/data')
 
-        self.transforms = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        ])
+        self.train_transforms = train_transforms
+        self.val_transforms = val_transforms
         
         self.data_train: Optional[Dataset] = None
         self.data_val: Optional[Dataset] = None
@@ -64,13 +64,16 @@ class AnimalLabeledDataModule(LightningDataModule):
             self.batch_size_per_device = self.hparams.batch_size // self.trainer.world_size
 
         if not self.data_train and not self.data_val and not self.data_test:
-            trainset = ImageFolder(os.path.join(self.data_dir, 'train/labeled'), transform=self.transforms)
-            self.data_test = AnimalUnlabeledDataset(os.path.join(self.data_dir, 'test'), transform=self.transforms)
-            self.data_train, self.data_val = random_split(
-                dataset=trainset,
-                lengths=self.hparams.train_val_test_split,
-                generator=torch.Generator().manual_seed(42),
-            )
+            self.data_train = AnimalDataset(os.path.join(self.data_dir, 'train/labeled'), transform=self.train_transforms)
+            self.data_val = AnimalDataset(os.path.join(self.data_dir, 'train/labeled'), transform=self.val_transforms)
+            self.data_test = AnimalUnlabeledDataset(os.path.join(self.data_dir, 'test'), transform=self.val_transforms)
+            indices = list(range(len(self.data_train)))
+            np.random.shuffle(indices)
+            train_num = int(self.hparams.train_val_test_split[0] * len(indices))
+            self.data_train = Subset(self.data_train, indices=indices[:train_num])
+            self.data_val = Subset(self.data_val, indices=indices[train_num:])
+
+            self.data_train.alb_transform = self.train_transforms
 
     def train_dataloader(self) -> DataLoader[Any]:
         return DataLoader(

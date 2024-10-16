@@ -4,6 +4,20 @@ import numpy as np
 import torch
 from PIL import Image
 from torch.utils.data import Dataset
+from torchvision.datasets import ImageFolder
+
+
+class AnimalDataset(ImageFolder):
+    def __init__(self, *args, **kwargs):
+        self.alb_transform = kwargs['transform']
+        kwargs['transform'] = None
+        super().__init__(*args, **kwargs)
+
+    def __getitem__(self, idx):
+        image, label = super().__getitem__(idx)
+        if self.alb_transform is not None:
+            image = self.alb_transform(image=np.array(image))['image']
+        return image, label
 
 
 class AnimalUnlabeledDataset(Dataset):
@@ -33,4 +47,6 @@ class AnimalUnlabeledDataset(Dataset):
 
     def __getitem__(self, idx):
         img = np.array(Image.open(self.data[idx]))
-        return {'image': self.transform(img), 'image_path': self.data[idx]}
+        if self.transform is not None:
+            img = self.transform(image=img)['image']
+        return {'image': img, 'image_path': self.data[idx]}

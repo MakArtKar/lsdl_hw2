@@ -22,6 +22,15 @@ data:
   test_dataset:
   batch_size: 256
 
+model:
+  net:
+    _target_: src.models.components.context_prediction_net.ContextPredictionNet
+    num_classes: 8
+    encoder:
+      _target_: torchvision.models.resnet18
+    ignored_layers:
+      - fc
+
 predict: False
 
 logger:

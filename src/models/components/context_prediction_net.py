@@ -12,7 +12,7 @@ class ContextPredictionNet(nn.Module):
             setattr(self.encoder, name, nn.Identity())
         self.fc = nn.LazyLinear(num_classes)
 
-    def forward(self, inputs: list[torch.Tensor]):
+    def forward(self, inputs: List[torch.Tensor]):
         outs = [self.encoder(inp) for inp in inputs]
         out = torch.cat(outs, dim=-1)
         return self.fc(out)

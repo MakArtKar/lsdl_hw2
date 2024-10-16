@@ -1,4 +1,5 @@
 import glob
+import itertools
 
 import numpy as np
 import torch
@@ -7,6 +8,8 @@ import torchvision.transforms.functional as F
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision.datasets import ImageFolder
+
+from src.transforms import PuzzleExtract, AlbumentationWrapper
 
 
 class AnimalDataset(ImageFolder):
@@ -72,3 +75,20 @@ class AnimalUnlabeledRotationDataset(AnimalUnlabeledDataset):
         img = F.rotate(img, self.angles[angle])
         img = F.center_crop(img, (h, w))
         return {'image': img, 'label': angle}
+
+
+class AnimalUnlabeledContextPredictionDataset(AnimalUnlabeledDataset):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.data = [[path for label in range(8)] for path in self.data]
+        self.data = list(itertools.chain(*self.data))
+
+    def __getitem__(self, idx):
+        data = super().__getitem__(idx)
+        label = idx % 8
+        label += label >= 4
+        center_img = data['image'][4]
+        target_img = data['image'][label]
+        data["image"] = (center_img, target_img)
+        data["label"] = label
+        return data

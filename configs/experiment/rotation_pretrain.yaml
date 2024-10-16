@@ -17,6 +17,7 @@ data:
     root: train/unlabeled
     num_angles: ${num_angles}
   test_dataset:
+  batch_size: 256
 
 model:
   net:

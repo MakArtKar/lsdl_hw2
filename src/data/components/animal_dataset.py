@@ -3,6 +3,7 @@ import glob
 import numpy as np
 import torch
 import torchvision
+import torchvision.transforms.functional as F
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision.datasets import ImageFolder
@@ -61,7 +62,13 @@ class AnimalUnlabeledRotationDataset(AnimalUnlabeledDataset):
     def __getitem__(self, idx):
         angle = int(np.random.choice(range(len(self.angles))))
         img = np.array(Image.open(self.data[idx]))
+        h, w = img.shape[:2]
         if self.transform is not None:
             img = self.transform(image=img)['image']
-        img = torchvision.transforms.functional.rotate(img, self.angles[angle])
+
+        if isinstance(img, np.ndarray):
+            img = Image.fromarray(img)
+        img = F.pad(img, [w // 2, h // 2, w // 2, h // 2], padding_mode="reflect")
+        img = F.rotate(img, self.angles[angle])
+        img = F.center_crop(img, (h, w))
         return {'image': img, 'label': angle}

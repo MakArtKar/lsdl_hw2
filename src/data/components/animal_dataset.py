@@ -78,14 +78,9 @@ class AnimalUnlabeledRotationDataset(AnimalUnlabeledDataset):
 
 
 class AnimalUnlabeledContextPredictionDataset(AnimalUnlabeledDataset):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.data = [[path for label in range(8)] for path in self.data]
-        self.data = list(itertools.chain(*self.data))
-
     def __getitem__(self, idx):
         data = super().__getitem__(idx)
-        label = idx % 8
+        label = np.random.randint(low=0, high=8)
         center_img = data['image'][4]
         target_img = data['image'][label + int(label >= 4)]
         data["image"] = (center_img, target_img)

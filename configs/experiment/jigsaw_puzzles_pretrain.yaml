@@ -6,13 +6,13 @@ defaults:
   - override /data/transforms@data.val_transforms: puzzle
   - _self_
 
-tags: ["context_prediction_pretrain"]
+tags: ["jigsaw_puzzles"]
 
 seed: 12345
 
 data:
   train_dataset:
-    _target_: src.data.components.animal_dataset.AnimalUnlabeledContextPredictionDataset
+    _target_: src.data.components.animal_dataset.AnimalUnlabeledJigsawPuzzlesDataset
     _partial_: True
     root: train/unlabeled
   test_dataset:
@@ -21,11 +21,22 @@ data:
 model:
   net:
     _target_: src.models.components.context_prediction_net.ContextPredictionNet
-    num_classes: 8
+    num_classes: 362880
     encoder:
       _target_: torchvision.models.resnet18
     ignored_layers:
       - fc
+    fc:
+      - _target_: torch.nn.LazyLinear
+        out_features: 4096
+      - _target_: torch.nn.ReLU
+      - _target_: torch.nn.Linear
+        in_features: 4096
+        out_features: 100
+      - _target_: torch.nn.ReLU
+      - _target_: torch.nn.Linear
+        in_features: 100
+        out_features: ${model.net.num_classes}
 
 predict: False
 

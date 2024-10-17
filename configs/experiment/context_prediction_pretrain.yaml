@@ -10,10 +10,6 @@ tags: ["context_prediction_pretrain"]
 
 seed: 12345
 
-puzzle_transform:
-  _target_: src.transforms.PuzzleExtract
-  size: 32
-
 data:
   train_dataset:
     _target_: src.data.components.animal_dataset.AnimalUnlabeledContextPredictionDataset

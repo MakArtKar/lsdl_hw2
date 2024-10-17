@@ -1,5 +1,6 @@
 import glob
 import itertools
+import math
 
 import numpy as np
 import torch
@@ -85,4 +86,44 @@ class AnimalUnlabeledContextPredictionDataset(AnimalUnlabeledDataset):
         target_img = data['image'][label + int(label >= 4)]
         data["image"] = (center_img, target_img)
         data["label"] = label
+        return data
+
+
+def lexicographic_index(p):
+    """
+    !!!took from https://stackoverflow.com/questions/12146910/finding-the-lexicographic-index-of-a-permutation-of-a-given-array
+
+    Return the lexicographic index of the permutation `p` among all
+    permutations of its elements. `p` must be a sequence and all elements
+    of `p` must be distinct.
+
+    >>> lexicographic_index('dacb')
+    19
+    >>> from itertools import permutations
+    >>> all(lexicographic_index(p) == i
+    ...     for i, p in enumerate(permutations('abcde')))
+    True
+    """
+    result = 0
+    for j in range(len(p)):
+        k = sum(1 for i in p[j + 1:] if i < p[j])
+        result += k * math.factorial(len(p) - j - 1)
+    return result
+
+
+class AnimalUnlabeledJigsawPuzzlesDataset(AnimalUnlabeledDataset):
+    def __getitem__(self, idx):
+        data = super().__getitem__(idx)
+        perm = np.random.permutation(np.arange(9))
+        data['label'] = lexicographic_index(perm)
+        data['image'] = [data['image'][idx] for idx in perm]
+        return data
+
+
+class AnimalUnlabeledJigsawPuzzlesPositionDataset(AnimalUnlabeledDataset):
+    def __getitem__(self, idx):
+        data = super().__getitem__(idx)
+        perm = np.random.permutation(np.arange(9))
+        data['label'] = torch.tensor(perm)
+        data['image'] = [data['image'][idx] for idx in perm]
         return data

@@ -1,0 +1,31 @@
+# @package _global_
+
+defaults:
+  - jigsaw_puzzles_pretrain
+  - _self_
+
+tags: ["jigsaw_puzzles_position"]
+
+seed: 12345
+
+num_classes: 81
+
+data:
+  train_dataset:
+    _target_: src.data.components.animal_dataset.AnimalUnlabeledJigsawPuzzlesPositionDataset
+
+model:
+  net:
+    fc:
+      - _target_: torch.nn.LazyLinear
+        out_features: 4096
+      - _target_: torch.nn.ReLU
+      - _target_: torch.nn.Linear
+        in_features: 4096
+        out_features: 100
+      - _target_: torch.nn.ReLU
+      - _target_: torch.nn.Linear
+        in_features: 100
+        out_features: ${num_classes}
+      - _target_: src.models.components.context_prediction_net.Reshape
+        shape: [-1, 9, 9]

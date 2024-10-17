@@ -19,7 +19,10 @@ class ContextPredictionNet(nn.Module):
         self.encoder = encoder
         for name in ignored_layers:
             setattr(self.encoder, name, nn.Identity())
-        self.fc = nn.Sequential(*fc) or LazyLinear(num_classes)
+        if fc is not None:
+            self.fc = nn.Sequential(*fc)
+        else:
+            self.fc = nn.LazyLinear(num_classes)
 
     def forward(self, inputs: List[torch.Tensor]):
         outs = [self.encoder(inp) for inp in inputs]

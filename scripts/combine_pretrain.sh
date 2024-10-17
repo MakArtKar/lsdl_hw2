@@ -1,0 +1,5 @@
+#!/bin/bash
+
+python -m src.train trainer=gpu trainer.max_epochs=1 experiment=context_prediction_pretrain run_name=combined_context_prediction_pretrain "names_to_strip_pretrained=['net.']" "names_to_strip=['net.', 'encoder.']" "ignored_children=['fc']" ckpt_path=logs/train/runs/rotation_pretrain/checkpoints/best.ckpt && \
+python -m src.train trainer=gpu trainer.max_epochs=1 experiment=jigsaw_puzzles_position_pretrain run_name=combined_jigsaw_puzzles_position_pretrain "names_to_strip_pretrained=['net.', 'encoder.']" "names_to_strip=['net.', 'encoder.']" "ignored_children=['fc']" ckpt_path=logs/train/runs/combined_context_prediction_pretrain/checkpoints/best.ckpt && \
+python -m src.train trainer=gpu trainer.max_epochs=1 logger=wandb experiment=fine_tune ckpt_path=logs/train/runs/combined_jigsaw_puzzles_position_pretrain/checkpoints/best.ckpt run_name=combined_rot_con_pred_jig_puz_fine_tune +logger.wandb.name=combined_rot_con_pred_jig_puz_fine_tune "names_to_strip_pretrained=['net.', 'encoder.']" "names_to_strip=['net.']"

@@ -4,6 +4,15 @@ import torch
 import torch.nn as nn
 
 
+class Reshape(nn.Module):
+    def __init__(self, shape):
+        super().__init__()
+        self.shape = tuple(shape)
+
+    def forward(self, x):
+        return torch.reshape(x, self.shape)
+
+
 class ContextPredictionNet(nn.Module):
     def __init__(self, num_classes: int, encoder: nn.Module, ignored_layers: List[str], fc: List[nn.Module] = None):
         super().__init__()

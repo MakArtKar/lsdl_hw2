@@ -16,6 +16,7 @@ class AnimalLabeledDataModule(LightningDataModule):
     def __init__(
         self,
         data_dir: str = "data",
+        num_classes: int = 10,
         train_dataset = None,
         val_dataset = None,
         test_dataset = None,
@@ -43,7 +44,7 @@ class AnimalLabeledDataModule(LightningDataModule):
 
         :return: The number of MNIST classes (10).
         """
-        return 10
+        return self.hparams.num_classes
 
     def prepare_data(self) -> None:
         if not os.path.isdir(self.data_dir):

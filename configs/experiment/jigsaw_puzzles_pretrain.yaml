@@ -10,6 +10,8 @@ tags: ["jigsaw_puzzles"]
 
 seed: 12345
 
+num_classes: 362880
+
 data:
   train_dataset:
     _target_: src.data.components.animal_dataset.AnimalUnlabeledJigsawPuzzlesDataset
@@ -17,11 +19,13 @@ data:
     root: train/unlabeled
   test_dataset:
   batch_size: 256
+  num_classes: ${num_classes}
 
 model:
+  num_classes: ${num_classes}
   net:
     _target_: src.models.components.context_prediction_net.ContextPredictionNet
-    num_classes: 362880
+    num_classes: ${num_classes}
     encoder:
       _target_: torchvision.models.resnet18
     ignored_layers:
@@ -36,7 +40,7 @@ model:
       - _target_: torch.nn.ReLU
       - _target_: torch.nn.Linear
         in_features: 100
-        out_features: ${model.net.num_classes}
+        out_features: ${num_classes}
 
 predict: False
 

@@ -118,3 +118,12 @@ class AnimalUnlabeledJigsawPuzzlesDataset(AnimalUnlabeledDataset):
         data['label'] = lexicographic_index(perm)
         data['image'] = [data['image'][idx] for idx in perm]
         return data
+
+
+class AnimalUnlabeledJigsawPuzzlesPositionDataset(AnimalUnlabeledDataset):
+    def __getitem__(self, idx):
+        data = super().__getitem__(idx)
+        perm = np.random.permutation(np.arange(9))
+        data['label'] = torch.tensor(perm)
+        data['image'] = [data['image'][idx] for idx in perm]
+        return data

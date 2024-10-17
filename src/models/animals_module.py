@@ -42,12 +42,11 @@ class AnimalsModule(LightningModule):
     def model_step(
         self, batch: Tuple[torch.Tensor, torch.Tensor], train=True
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        x, y = batch['image'], batch['label']
-        logits = self.forward(x)
-        loss = self.criterion(logits, y)
+        logits = self.forward(batch['image'])
+        loss = self.criterion(logits, batch['label'])
         preds = torch.argmax(logits, dim=1)
-        return loss, preds, y
-    
+        return loss, preds, batch['label']
+
     def training_step(
         self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int
     ) -> torch.Tensor:

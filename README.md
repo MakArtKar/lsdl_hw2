@@ -1,5 +1,23 @@
 <div align="center">
 
+# Pre-text SSL - LSDL HW2
+
+</div>
+
+* [Kaggle competition](https://www.kaggle.com/competitions/lsdl-hw-2/leaderboard)
+* [WanDB report](https://wandb.ai/makartkar/lsdl_hw2/reports/Report--Vmlldzo5NzM0NjEy)
+* [WanDB experiments](https://wandb.ai/makartkar/lsdl_hw2/overview)
+
+The pipeline was forked from [lightning-hydra-template](https://github.com/ashleve/lightning-hydra-template)
+
+Different approaches can be found in `configs/experiment/` and pipelines (pretrain + fine-tune) in `scripts/`
+
+<br>
+
+<div align="center">
+
+# **Inherited README**
+
 # Lightning-Hydra-Template
 
 [![python](https://img.shields.io/badge/-Python_3.8_%7C_3.9_%7C_3.10-blue?logo=python&logoColor=white)](https://github.com/pre-commit/pre-commit)

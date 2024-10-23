@@ -10,7 +10,34 @@
 
 The pipeline was forked from [lightning-hydra-template](https://github.com/ashleve/lightning-hydra-template)
 
-Different approaches can be found in `configs/experiment/` and pipelines (pretrain + fine-tune) in `scripts/`
+Different approaches can be found in `configs/experiment/` and pipelines (pretrain + fine-tune) in `scripts/`.
+
+1) Baseline (without pretraining)
+```bash
+python -m src.train trainer=gpu trainer.max_epochs=100 logger=wandb experiment=baseline_augs
+```
+2) Rotation pretrain - the best `NUM_ANGLES` value is 4
+```bash
+bash scripts/rotation_pretrain.sh rotation <NUM_ANGLES>
+```
+3) Context prediction
+```bash
+bash scripts/context_prediction_pretrain.sh context_prediction
+```
+4) Jigsaw puzzles (comment [RandomRotate90](https://github.com/MakArtKar/lsdl_hw2/blob/main/configs/data/transforms/puzzle_augs.yaml#L28) for vanilla approach - lines 28 and 29)
+```bash
+bash scripts/jigsaw_puzzles_pretrain.sh jigsaw_puzzles  # for vanilla permutation prediction approach
+```
+```bash
+bash scripts/jigsaw_puzzles_position_pretrain.sh jigsaw_puzzles_position  # works better - logits prediction for each tile
+```
+5) Jigsaw puzzles with rotations - the same as previous but randomly rotates input tiles
+```bash
+bash scripts/jigsaw_puzzles_pretrain.sh jigsaw_puzzles_with_rotations  # for vanilla permutation prediction approach
+```
+```bash
+bash scripts/jigsaw_puzzles_position_pretrain.sh jigsaw_puzzles_position_with_rotations  # works better - logits prediction for each tile
+```
 
 <br>
 
